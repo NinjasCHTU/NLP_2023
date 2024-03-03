@@ -194,7 +194,6 @@ def clean_subtitle(string):
 
 
 
-# TODO: srt_to_Excel => similar to srt_to_csv but output as excel
 # srt_to_Excel(srt_path,sub_output)
 
 srt_to_Excel(srt_folder_path,output_folder)

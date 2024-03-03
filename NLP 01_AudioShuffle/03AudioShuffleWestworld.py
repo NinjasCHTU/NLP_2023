@@ -107,7 +107,7 @@ mySeed = 24
 # 55 is too easy
 
 skip_inx = [4,9,16,17,29,30,52,53,55,68,72,79,84, 124]
-easy = [1,11,14,6,8,10,7,26,32]
+easy = [1,11,14,6,8,10,7,26,32, 133]
 
 # (2,'2-Jul-23')
 # (6,'2-Jul-23')
@@ -136,7 +136,7 @@ random.shuffle(random_inx_list)
 #%%
 ########################## run below recurrently ##################################
 # chosen_inx = random_inx_list[3]
-chosen_inx = 126
+chosen_inx = 137
 print(f"Index: {chosen_inx}")
 audio_path = os.path.join(folder_path,file_path[chosen_inx])
 speed_factor = 1

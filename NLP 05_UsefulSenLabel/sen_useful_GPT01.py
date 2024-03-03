@@ -12,12 +12,9 @@
 
 """
 # NEXT STEP: 
-    1) migrate these functions to my own libs !!!!: nlp_predict, ml_upsampling, nlp_make_tfidf_matrix,
-        don't include lemmatize in my lib file
+
     2) try xgboost, lightgbm, autogluon see if there's an approvement
     3) write a code to see the distribution of the sentences containing specific word or bigram
-    
-
     
  """
 
@@ -209,6 +206,7 @@ def nlp_make_tfidf_matrix(X,text_col, ngram_range =(1,1),stop_words = [], max_df
 def os_add_extension(ori_path, added_extension, inplace = True):
     # still doesn't work
     # still can't modify the text direclty
+    # imported from "C:\Users\Heng2020\OneDrive\Python NLP\NLP 05_UsefulSenLabel\sen_useful_GPT01.py"
     ori_path_in = [ori_path] if isinstance(ori_path, str) else ori_path
     
     # for now I only write added_extension to support only string
