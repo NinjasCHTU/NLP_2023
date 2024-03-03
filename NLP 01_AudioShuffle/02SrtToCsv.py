@@ -12,8 +12,8 @@ from packaging import version
 # srt_path = r"H:\D_Video\Westworld Portugues 04\Eng Sub\Westworld.S04E01 EngSub 02.srt"
 # sub_output_name = 'Westworld_S04E01_EN02.xlsx'
 
-srt_folder_path = r"H:\D_Video\The Ark Season 01 Portuguese\Subtitles"
-output_folder = r"H:\D_Video\The Ark Season 01 Portuguese\Subtitles"
+srt_folder_path = r"H:\D_Video\The Ark Season 01 Portuguese\Subtitles\srt"
+output_folder = r"H:\D_Video\The Ark Season 01 Portuguese\Subtitles\Excel generated"
 
 alarm_path = r"H:\D_Music\Sound Effect positive-logo-opener.wav"
 
@@ -60,6 +60,11 @@ def srt_to_csv(srt_path,output_path,encoding='utf-8-sig',index=False):
     df_sub.to_csv(output_path, encoding=encoding,index=index)
 
 def srt_to_Excel(srt_path,output_path,encoding='utf-8-sig',index=True,alarm_path = r"H:\D_Music\Sound Effect positive-logo-opener.wav"):
+    
+    # when .ass is converted to .srt, when I checked using notepad ++
+    # it also has weird tag at the front
+    # but seems like it's normal when export to Excel or even play using VLC Player 
+
     #TOFIX the Excel files created still give me an error:
         #This file can't be previewed because of an error in the Microsoft Excel previewer
     #But files are created just fine.
@@ -88,6 +93,8 @@ def srt_to_Excel(srt_path,output_path,encoding='utf-8-sig',index=True,alarm_path
             ts_df_start = time()
             ################### main tested function
             each_df = srt_to_df(str_full_name)
+            # shift the index of each_df to start at 1
+            each_df.index += 1
             #---------------------------
             ts_df_end = time()
             t_df_duration = ts_df_end - ts_df_start
