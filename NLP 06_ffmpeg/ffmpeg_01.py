@@ -9,7 +9,7 @@ from pathlib import Path
 from langcodes import Language
 import langcodes
 import pycountry
-from typing import Union,List,Tuple
+from typing import Union,List,Tuple, Callable
 import subprocess
 import sys
 import logging
@@ -23,6 +23,144 @@ sys.path.append(r'C:\Users\Heng2020\OneDrive\Python MyLib\Python MyLib 01\10 OS'
 import os_01 as ost
 
 from typing import Literal, Union
+def extract_audio2(
+        video_folder:     Union[Path,str],
+        output_folder:    Union[Path,str],
+        video_extension:  Union[list,str] = [".mp4",".mkv"],
+        output_extension: Union[list,str] = ".mp3",
+        overwrite_file:   bool = True,
+        n_limit:          int = 150,
+        output_prefix:    str = "",
+        output_suffix:    str = "",
+        play_alarm:       bool = True,
+        alarm_done_path:str = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
+):
+    input_param = {
+        'video_path': 6
+    }
+
+    _extract_media_setup(
+        input_folder = video_folder,
+        output_folder = output_folder,
+        input_extension = video_extension,
+        output_extension = output_extension,
+        extract_1_file_func = extract_1_audio,
+        overwrite_file = overwrite_file,
+        n_limit = n_limit,
+        output_prefix = output_prefix,
+        output_suffix = output_suffix,
+        play_alarm = play_alarm,
+        alarm_done_path = alarm_done_path,
+    )
+
+def extract_subtitle(
+        video_folder:     Union[Path,str],
+        output_folder:    Union[Path,str],
+        video_extension:  Union[list,str] = [".mp4",".mkv"],
+        output_extension: Union[list,str] = ".mp3",
+        overwrite_file:   bool = True,
+        n_limit:          int = 150,
+        output_prefix:    str = "",
+        output_suffix:    str = "",
+        play_alarm:       bool = True,
+        alarm_done_path:str = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
+):
+    input_param = {
+        'video_path': 6
+    }
+    
+    _extract_media_setup(
+        input_folder = video_folder,
+        output_folder = output_folder,
+        input_extension = video_extension,
+        output_extension = output_extension,
+        extract_1_file_func = extract_sub_1_video,
+        overwrite_file = overwrite_file,
+        n_limit = n_limit,
+        output_prefix = output_prefix,
+        output_suffix = output_suffix,
+        play_alarm = play_alarm,
+        alarm_done_path = alarm_done_path,
+    )
+
+def _extract_media_setup(
+        input_folder: Union[str,Path],
+        output_folder: Union[str,Path],
+        input_extension: Union[list[str],str],
+        output_extension: Union[list[str],str],
+        extract_1_file_func: Callable,
+        # input_param_name: list[str],
+        overwrite_file:   bool = True,
+        n_limit: int = 150,
+        output_prefix:    str = "",
+        output_suffix:    str = "",
+        play_alarm: bool = True,
+        alarm_done_path:str = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
+):
+    """
+    helper function to reduce code redundancy
+    it would setup which/ how many files should be extracted in inputs
+    how many files should be created in output 
+
+
+    """
+    import sys
+    from pathlib import Path
+    from playsound import playsound
+    from time import time, perf_counter
+    sys.path.append(r'C:\Users\Heng2020\OneDrive\Python MyLib\Python MyLib 01\08 Other')
+    import lib08_Other as pw
+
+    ts01 = time()
+    output_extension = [output_extension]
+    output_extension_in = []
+    
+    # add . to extension in case it doesn't have .
+    for extension in output_extension:
+        if not "." in extension:
+            output_extension_in.append("."+extension)
+        else:
+            output_extension_in.append(extension)
+    filename_list_ext = ost.get_filename(input_folder,input_extension)
+    path_list = ost.get_full_filename(input_folder,input_extension)
+    # warrus operator, makes it usuable only for python >= 3.8
+    (n_file := min(len(filename_list_ext),n_limit))
+    filename_list_ext = filename_list_ext[:n_file]
+    path_list = path_list[:n_file]
+
+    filename_list = [filename.split('.')[0] for filename in filename_list_ext]
+
+    for i, filename in enumerate(filename_list):
+        
+            
+        output_name = output_prefix + filename_list[i] + output_suffix
+        # original_stdout = sys.stdout
+        # sys.stdout = open('nul', 'w')
+         
+        # the problem here is that the input parameter name in extract_1_file_func
+        # could be different and 
+
+        for i, extension in enumerate(output_extension_in):
+            input_dict = {
+                input_param_name[0]:path_list[i],
+                input_param_name[1]:extension,
+            }
+            extract_1_file_func(
+                video_path = path_list[i],
+                file_extension = extension,
+                output_folder = output_folder,
+                output_name = output_name,
+                play_alarm=False,
+                overwrite_file=overwrite_file)
+        
+        # sys.stdout = original_stdout
+    if play_alarm:
+        playsound(alarm_done_path)
+    ts02 = time()
+    duration = ts02-ts01
+    pw.print_time(duration)
+    print()
+    return filename_list
 
 def extract_sub_1_video(
     video_path:         Union[str,Path],
@@ -147,7 +285,7 @@ def extract_sub_1_video(
         print(result.stderr)
     
     elif result.returncode == 0:
-        print("Extract audio successfully!!!")
+        # print("Extract audio successfully!!!")
         
         if play_alarm:
             playsound(alarm_done_path)
@@ -447,15 +585,12 @@ def extract_audio(video_folder:     Union[Path,str],
     import sys
     from pathlib import Path
     from playsound import playsound
-    
     from time import time
     ts01 = time()
     
     alarm_done_path = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
-    
-    sys.path.append(r"C:\Users\Heng2020\OneDrive\Python MyLib")
-    import lib08_SrtToCsv as f8
-    import lib09_Other as f9
+    sys.path.append(r'C:\Users\Heng2020\OneDrive\Python MyLib\Python MyLib 01\08 Other')
+    import lib08_Other as pw
     
     codec_dict = {'.mp3': "libmp3lame",
                   'mp3' : "libmp3lame",
@@ -473,8 +608,8 @@ def extract_audio(video_folder:     Union[Path,str],
         else:
             output_extension_in.append(extension)
     
-    video_name_list_ext = f8.get_filename(video_folder,video_extension)
-    video_path_list = f8.get_full_filename(video_folder,video_extension)
+    video_name_list_ext = ost.get_filename(video_folder,video_extension)
+    video_path_list = ost.get_full_filename(video_folder,video_extension)
     
     n_file = min(len(video_name_list_ext),n_limit)
     video_name_list_ext = video_name_list_ext[:n_file]
@@ -504,7 +639,7 @@ def extract_audio(video_folder:     Union[Path,str],
         playsound(alarm_done_path)
     ts02 = time()
     duration = ts02-ts01
-    f9.print_time(duration)
+    pw.print_time(duration)
     
     return video_name_list
 

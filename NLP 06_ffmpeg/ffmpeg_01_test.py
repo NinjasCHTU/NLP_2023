@@ -1,6 +1,38 @@
 import unittest
 from ffmpeg_01 import *
 
+should_skip = True
+
+class Test_extract_subtitle(unittest.TestCase):
+    folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
+
+    output_folder01 = Path(r'H:\D_Video\The Ark Season 01 Portuguese\Subtitles')
+
+    def test_basic01(self):
+        extract_subtitle(self.folder01, self.output_folder01)
+
+# def test_extract_subtitle():
+
+#     folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
+#     output_folder01 = Path(r'H:\D_Video\The Ark Season 01 Portuguese\Subtitles')
+#     extract_subtitle(folder01,output_folder01)
+
+
+# @unittest.skipIf(should_skip, "Skipping: Test_extract_audio2s")
+class Test_extract_audio2(unittest.TestCase):
+    folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
+    French_bigbang = Path(r"E:\Videos\The Big Bang Theory\The Big Bang Theory French Season 06")
+    output_folder = Path(r"E:\Videos\The Big Bang Theory\The Big Bang Theory French Season 06\Audio")
+    # 4.82 min for 10 audios
+
+    def test_basic01(self):
+        extract_audio2(self.French_bigbang,self.output_folder,n_limit=10)
+    
+    def test_2_output_extension(self):
+        pass
+    pass
+
+@unittest.skipIf(should_skip, "Skipping: Test_extract_1_subtitles")
 class Test_extract_1_subtitle(unittest.TestCase):
 
     folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
@@ -12,13 +44,16 @@ class Test_extract_1_subtitle(unittest.TestCase):
     def test_basic01(self):
         actual = extract_sub_1_video(self.video_path01,self.output_folder01,self.output_name,output_extension='ass')
         expect = None
+        self.assertEqual(expect, None)
     def test_basic02_no_outputname_and_ext(self):
         actual = extract_sub_1_video(self.video_path01,self.output_folder01)
         expect = None
+        self.assertEqual(expect, None)
     
     def test_basic03_no_outputName(self):
         actual = extract_sub_1_video(self.video_path01,self.output_folder01,output_extension='.srt')
         expect = None
+        self.assertEqual(expect, None)
 
 
         
@@ -107,4 +142,5 @@ def test_create_subtitle():
 
 
 if __name__ == '__main__':
+    # test_
     unittest.main()
