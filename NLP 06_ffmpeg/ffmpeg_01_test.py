@@ -3,6 +3,7 @@ from ffmpeg_01 import *
 
 should_skip = True
 
+# @unittest.skipIf(should_skip, "Skipping: Test_extract_subtitle")
 class Test_extract_subtitle(unittest.TestCase):
     folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
 
@@ -11,11 +12,28 @@ class Test_extract_subtitle(unittest.TestCase):
     def test_basic01(self):
         extract_subtitle(self.folder01, self.output_folder01)
 
-# def test_extract_subtitle():
+def test_extract_subtitle():
+# extract_subtitle doesn't work on just 1 video
+    
+    # folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
+    # output_folder01 = Path(r'H:\D_Video\The Ark Season 01 Portuguese\Subtitles')
+    # extract_subtitle(folder01,output_folder01)
 
-#     folder01 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
-#     output_folder01 = Path(r'H:\D_Video\The Ark Season 01 Portuguese\Subtitles')
-#     extract_subtitle(folder01,output_folder01)
+    # folder02 = Path(r"C:\Users\Heng2020\OneDrive\Python NLP\InputData\The Matrix Resurrections 2021.mkv")
+    # output_folder02 = Path(r'C:\Users\Heng2020\OneDrive\Python NLP\OutputData\SubtitleMatrix')
+    # extract_subtitle(folder02,output_folder02)
+
+    # test when input is .ass but output is .srt
+    folder03 = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
+    output_folder03 = Path(r'C:\Users\Heng2020\OneDrive\Python NLP\OutputData\The Ark season 1 srt')
+    extract_subtitle(folder03,output_folder03, output_extension= ".srt")
+
+def test_extract_sub_1_video():
+    folder02 = Path(r"C:\Users\Heng2020\OneDrive\Python NLP\InputData\The Matrix Resurrections 2021.mkv")
+    output_folder02 = Path(r'C:\Users\Heng2020\OneDrive\Python NLP\OutputData\SubtitleMatrix')
+    extract_sub_1_video(folder02,output_folder02)
+
+
 
 
 # @unittest.skipIf(should_skip, "Skipping: Test_extract_audio2s")
@@ -65,7 +83,7 @@ def test_get_metadata():
     folder = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
     video_name = "The Ark S01E02 PT.mkv"
     video_path = folder / video_name
-    test = get_metadata(video_path)
+    test = get_all_metadata(video_path)
     logging.debug('Done From test_get_subtitle_stream_index')
 
 def test_get_subtitle_index():
@@ -142,5 +160,6 @@ def test_create_subtitle():
 
 
 if __name__ == '__main__':
-    # test_
-    unittest.main()
+    test_extract_subtitle()
+    # test_extract_sub_1_video()
+    # unittest.main()

@@ -57,7 +57,7 @@ def extract_subtitle(
         video_folder:     Union[Path,str],
         output_folder:    Union[Path,str],
         video_extension:  Union[list,str] = [".mp4",".mkv"],
-        output_extension: Union[list,str] = ".mp3",
+        output_extension: Union[list,str] = None,
         overwrite_file:   bool = True,
         n_limit:          int = 150,
         output_prefix:    str = "",
@@ -86,9 +86,9 @@ def extract_subtitle(
 def _extract_media_setup(
         input_folder: Union[str,Path],
         output_folder: Union[str,Path],
+        extract_1_file_func: Callable,
         input_extension: Union[list[str],str],
         output_extension: Union[list[str],str],
-        extract_1_file_func: Callable,
         # input_param_name: list[str],
         overwrite_file:   bool = True,
         n_limit: int = 150,
@@ -116,11 +116,16 @@ def _extract_media_setup(
     output_extension_in = []
     
     # add . to extension in case it doesn't have .
-    for extension in output_extension:
-        if not "." in extension:
-            output_extension_in.append("."+extension)
-        else:
-            output_extension_in.append(extension)
+    if output_extension[0] is not None:
+        for extension in output_extension:
+            if not "." in extension:
+                output_extension_in.append("."+extension)
+            else:
+                output_extension_in.append(extension)
+    else:
+        output_extension_in = [None]
+
+
     filename_list_ext = ost.get_filename(input_folder,input_extension)
     path_list = ost.get_full_filename(input_folder,input_extension)
     # warrus operator, makes it usuable only for python >= 3.8
@@ -140,18 +145,19 @@ def _extract_media_setup(
         # the problem here is that the input parameter name in extract_1_file_func
         # could be different and 
 
-        for i, extension in enumerate(output_extension_in):
-            input_dict = {
-                input_param_name[0]:path_list[i],
-                input_param_name[1]:extension,
-            }
+        for j, extension in enumerate(output_extension_in):
+            # input_dict = {
+            #     input_param_name[0]:path_list[i],
+            #     input_param_name[1]:extension,
+            # }
             extract_1_file_func(
                 video_path = path_list[i],
-                file_extension = extension,
+                output_extension = extension,
                 output_folder = output_folder,
                 output_name = output_name,
                 play_alarm=False,
                 overwrite_file=overwrite_file)
+            print(f"extracted {output_name} successfully!!!")
         
         # sys.stdout = original_stdout
     if play_alarm:
@@ -173,7 +179,8 @@ def extract_sub_1_video(
     alarm_done_path:    str = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
                     ):
     # medium tested
-    # ToAdd feature 01: output both .wav & .mp3
+    # ToAdd feature 01: extract mutiple subtitles for many languages
+    # ToAdd feature 02: select only some languages to extract
     
     
     """
@@ -261,7 +268,10 @@ def extract_sub_1_video(
     #     "-q:a", "0",
     #     str(output_path)
     # ]
-    output_ext_no_dot = output_extension.replace('.','')
+    if output_extension:
+        output_ext_no_dot = output_extension.replace('.','')
+    else:
+        output_ext_no_dot = ori_extension.replace('.','')
     command = [
         'ffmpeg',
         '-i', str(video_path),  # Input file
@@ -428,7 +438,7 @@ def closest_language_obj(misspelled_language):
 def extract_1_audio(video_path:     Union[str,Path],
                     output_folder:  Union[str,Path],
                     output_name:    Union[str,Path], 
-                    file_extension: Union[str,list] = ".mp3",
+                    output_extension: Union[str,list] = ".mp3",
                     play_alarm:     bool = True,
                     overwrite_file: bool = True,
                     alarm_done_path = r"H:\D_Music\Sound Effect positive-logo-opener.mp3"
@@ -489,16 +499,16 @@ def extract_1_audio(video_path:     Union[str,Path],
                   'wav' : "pcm_s24le"
                   }
     
-    codec = codec_dict[file_extension]
+    codec = codec_dict[output_extension]
     
     output_folder_in = Path(output_folder)
     
-    if isinstance(file_extension, str):
-        if file_extension not in output_name:
+    if isinstance(output_extension, str):
+        if output_extension not in output_name:
             
-            if "." not in file_extension:
-                file_extension = "." + file_extension
-            output_name += file_extension
+            if "." not in output_extension:
+                output_extension = "." + output_extension
+            output_name += output_extension
     
     output_path = output_folder / output_name
     
@@ -624,12 +634,13 @@ def extract_audio(video_folder:     Union[Path,str],
         # original_stdout = sys.stdout
         # sys.stdout = open('nul', 'w') 
         
-        for i, extension in enumerate(output_extension_in):
+        # fix i to j
+        for j, extension in enumerate(output_extension_in):
             extract_1_audio(
                 video_path = video_path_list[i],
                 output_folder = output_folder,
                 output_name = output_name,
-                file_extension = extension,
+                output_extension = extension,
                 play_alarm=False,
                 overwrite_file=overwrite_file)
         
@@ -673,7 +684,7 @@ def get_metadata2(media_path):
     
     return streams_info
 
-def get_metadata(media_path):
+def get_all_metadata(media_path):
     import subprocess
     import json    
     import pandas as pd
@@ -732,7 +743,7 @@ def get_metadata(media_path):
     
     return info_df
 
-def _select_media(media_path, media, language = None, file_extension = None):
+def get_metadata(media_path, media, language = None, file_extension = None):
     #  not tested
     if language is None:
         language_in = None
@@ -752,7 +763,7 @@ def _select_media(media_path, media, language = None, file_extension = None):
     
         
     # requires get_metadata
-    media_info = get_metadata(media_path)
+    media_info = get_all_metadata(media_path)
     
     if language_in:
         if file_extension_in:
@@ -773,11 +784,15 @@ def _select_media(media_path, media, language = None, file_extension = None):
             
     return selected_media
 
-def _get_media_extension(media_path, media, language = None, file_extension = None):
+def _get_media_extension(media_path, media, language = None, file_extension = None
+                         ) -> Union[list[int],int, None] :
     # not tested
     # return the unique list of media extension
     # return str if 1 unique extension is found
-    selected_media = _select_media(media_path, media, language = None, file_extension = None)
+    selected_media = get_metadata(media_path, media, language = language, file_extension = file_extension)
+    # subrip is the same as .srt
+    # so I converted to srt
+    selected_media.loc[selected_media["file_extension"].isin(["subrip"]),"file_extension"] = "srt"
     unqiue_ext = list(set(selected_media['file_extension'].tolist()))
     
     if len(unqiue_ext) == 0:
@@ -799,7 +814,7 @@ def get_subtitle_extension(media_path, language = None, file_extension = None):
 
 def _get_media_index(media_path, media, language = None, file_extension = None):
     
-    selected_media = _select_media(media_path, media, language = None, file_extension = None)
+    selected_media = get_metadata(media_path, media, language = None, file_extension = None)
     idx_list = selected_media.index.tolist()
     # return None if media is not found
     if len(idx_list) == 0:
@@ -827,7 +842,7 @@ def test_get_metadata():
     folder = Path(r"H:\D_Video\The Ark Season 01 Portuguese")
     video_name = "The Ark S01E02 PT.mkv"
     video_path = folder / video_name
-    test = get_metadata(video_path)
+    test = get_all_metadata(video_path)
     logging.debug('Done From test_get_subtitle_stream_index')
 
 def test_get_subtitle_index():
@@ -961,10 +976,10 @@ def main():
     cmd_line = ' '.join(command)
     cmd_line
 
-    result = get_metadata(video_path)
+    result = get_all_metadata(video_path)
 
-    result02 = get_metadata(video_path02)
-    result03 = get_metadata(video_path03)
+    result02 = get_all_metadata(video_path02)
+    result03 = get_all_metadata(video_path03)
 
     lang = closest_language_obj('Portugues')
     test = lang.to_alpha3()
